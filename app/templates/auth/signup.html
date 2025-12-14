@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-center min-vh-100 px-3">
+    <div class="card shadow-lg border-0 rounded-4 w-100" style="max-width: 400px;">
+        <div class="card-body p-5">
+            <h2 class="fw-bold text-center text-primary mb-4">Login</h2>
+            {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+            <form action="/signup" method="post">
+                <div class="mb-3"><input type="text" name="username" class="form-control" placeholder="Username" required></div>
+                <div class="mb-3"><input type="password" name="password" class="form-control" placeholder="Password" required></div>
+                <button class="btn btn-gradient w-100 rounded-pill fw-bold">Sign In</button>
+            </form>
+            <div class="text-center mt-3"><a href="/signup" class="text-decoration-none">Create Account</a></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
