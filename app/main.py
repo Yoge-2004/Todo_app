@@ -153,3 +153,24 @@ def logout():
     response = RedirectResponse(url="/login", status_code=303)
     response.delete_cookie("user_id")
     return response
+
+@app.get("/delete_account")
+def delete_account(request: Request, session: Session = Depends(get_session)):
+    user = get_current_user(request, session)
+    if not user:
+        return RedirectResponse(url="/login")
+    
+    # 1. Delete all tasks owned by this user
+    tasks = session.exec(select(Task).where(Task.owner_id == user.id)).all()
+    for task in tasks:
+        session.delete(task)
+        
+    # 2. Delete the user
+    session.delete(user)
+    session.commit()
+    
+    # 3. Log out (remove cookie)
+    response = RedirectResponse(url="/login", status_code=303)
+    response.delete_cookie("user_id")
+    response.set_cookie(key="flash_msg", value="Account deleted successfully.", max_age=5)
+    return response
