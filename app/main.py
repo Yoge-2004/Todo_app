@@ -18,17 +18,17 @@ from .auth import get_password_hash, verify_password
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
 
-# --- 1. EMAIL FUNCTION (Bulletproof/No Crashes) ---
+# --- 1. EMAIL FUNCTION (Fixed for Render Blocking) ---
 def send_email_sync(subject: str, email_to: str, body_data: dict):
     """
-    Sends email using standard Python libraries.
-    Bypasses fastapi-mail to avoid dictionary encoding errors and timeouts.
+    Sends email using SMTP_SSL on Port 465.
+    This bypasses the [Errno 101] block on Port 587.
     """
     sender = os.environ.get("MAIL_USERNAME")
     password = os.environ.get("MAIL_PASSWORD")
     
     if not sender or not password:
-        print("Error: Email credentials missing in Environment Variables.")
+        print("Error: Email credentials missing.")
         return
 
     try:
@@ -38,37 +38,28 @@ def send_email_sync(subject: str, email_to: str, body_data: dict):
         msg['To'] = email_to
         msg['Subject'] = subject
 
-        # Create HTML Body manually (Fixes the 'dict has no encode' error)
+        # Create HTML Body
         html_content = f"""
         <html>
-            <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 20px; background-color: #f4f4f4;">
-                <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    <div style="background-color: #4f46e5; padding: 20px; text-align: center;">
-                        <h2 style="color: white; margin: 0;">Task Notification</h2>
-                    </div>
-                    <div style="padding: 30px;">
-                        <p style="font-size: 16px; color: #333;">Hello,</p>
-                        <p style="font-size: 16px; color: #333;">You have a new <strong>High Priority</strong> task on your list:</p>
-                        
-                        <div style="background: #eef2ff; border-left: 5px solid #4f46e5; padding: 15px; margin: 20px 0;">
-                            <h3 style="margin: 0 0 10px 0; color: #1f2937;">{body_data.get('title')}</h3>
-                            <p style="margin: 0; color: #6b7280;">Due Date: <strong>{body_data.get('deadline')}</strong></p>
-                        </div>
-                        
-                        <p style="font-size: 14px; color: #666;">Stay productive!</p>
-                    </div>
-                    <div style="background-color: #f9fafb; padding: 15px; text-align: center; font-size: 12px; color: #9ca3af;">
-                        Sent via TaskFlow App
-                    </div>
+            <body style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                <h2 style="color: #4f46e5;">Task Notification</h2>
+                <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; border-left: 5px solid #4f46e5;">
+                    <p><strong>Task:</strong> {body_data.get('title')}</p>
+                    <p><strong>Deadline:</strong> {body_data.get('deadline')}</p>
+                    <p><strong>Priority:</strong> <span style="color: red;">High</span></p>
                 </div>
+                <p>Get it done!</p>
             </body>
         </html>
         """
         msg.attach(MIMEText(html_content, 'html'))
 
-        # Connect to Gmail (Port 587 - STARTTLS is standard for Gmail)
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()  # Secure the connection
+        # --- THE FIX IS HERE ---
+        # Use SMTP_SSL directly on Port 465
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        
+        # Note: server.starttls() is NOT needed for SMTP_SSL
+        
         server.login(sender, password)
         server.send_message(msg)
         server.quit()
