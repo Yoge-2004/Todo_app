@@ -5,11 +5,22 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="fw-black m-0" style="font-weight: 900; letter-spacing: -1px;">Tasks</h1>
-            <p class="text-muted m-0 small">Welcome back, {{ user.username }}</p>
+            <p class="text-muted m-0 small">{{ user.username }}</p>
         </div>
-        <a href="/logout" class="btn btn-light rounded-circle" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-            <i class="bi bi-box-arrow-right"></i>
-        </a>
+        
+        <div class="d-flex gap-2">
+            <a href="/delete_account" 
+               onclick="return confirm('Are you sure? This will delete your account and ALL tasks permanently.')"
+               class="btn btn-outline-danger rounded-circle" 
+               style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;"
+               title="Delete Account">
+                <i class="bi bi-trash3-fill"></i>
+            </a>
+
+            <a href="/logout" class="btn btn-light rounded-circle" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;" title="Logout">
+                <i class="bi bi-box-arrow-right"></i>
+            </a>
+        </div>
     </div>
 
     <div class="card border-0 shadow-sm mb-4" style="background: var(--bg-surface); border-radius: 20px;">
@@ -79,6 +90,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         const dateInput = document.querySelector('input[name="deadline"]');
         if(dateInput) {
+            // Set min attribute to today's date in YYYY-MM-DD format
             dateInput.min = new Date().toISOString().split("T")[0];
         }
     });
