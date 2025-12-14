@@ -1,9 +1,8 @@
 import os
-import smtplib  # Standard Python Email Library (Stable)
+import smtplib  # Standard Python Email Library
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from pathlib import Path
-from datetime import date, datetime
+from datetime import date
 
 from fastapi import FastAPI, Depends, Request, Form, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -18,17 +17,19 @@ from .auth import get_password_hash, verify_password
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
 
-# --- 1. EMAIL FUNCTION (Fixed for Render Blocking) ---
+# --- 1. EMAIL FUNCTION (Port 465 SSL) ---
 def send_email_sync(subject: str, email_to: str, body_data: dict):
     """
     Sends email using SMTP_SSL on Port 465.
-    This bypasses the [Errno 101] block on Port 587.
+    This works on Render where Port 587 is often blocked.
     """
+    print(f"📧 Attempting to send email to: {email_to}")  # DEBUG LOG
+    
     sender = os.environ.get("MAIL_USERNAME")
     password = os.environ.get("MAIL_PASSWORD")
     
     if not sender or not password:
-        print("Error: Email credentials missing.")
+        print("❌ Error: MAIL_USERNAME or MAIL_PASSWORD missing in Environment Variables.")
         return
 
     try:
@@ -54,12 +55,8 @@ def send_email_sync(subject: str, email_to: str, body_data: dict):
         """
         msg.attach(MIMEText(html_content, 'html'))
 
-        # --- THE FIX IS HERE ---
-        # Use SMTP_SSL directly on Port 465
+        # Use SMTP_SSL directly on Port 465 (Secure from the start)
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        
-        # Note: server.starttls() is NOT needed for SMTP_SSL
-        
         server.login(sender, password)
         server.send_message(msg)
         server.quit()
@@ -128,14 +125,22 @@ async def add_task(
     session.add(new_task)
     session.commit()
     
-    # EMAIL LOGIC: Only send if Priority is High and Username is an Email
-    if priority == "High" and "@" in user.username:
-        background_tasks.add_task(
-            send_email_sync, 
-            "High Priority Task Assigned", 
-            user.username, 
-            {"title": title, "deadline": deadline}
-        )
+    # EMAIL LOGIC (With Debug Prints)
+    print(f"🔍 Checking Email Logic: Priority={priority}, User={user.username}")
+    
+    if priority == "High":
+        if "@" in user.username:
+            print("🚀 Triggering Background Email Task...")
+            background_tasks.add_task(
+                send_email_sync, 
+                "High Priority Task Assigned", 
+                user.username, 
+                {"title": title, "deadline": deadline}
+            )
+        else:
+            print("⚠️ Skipped Email: Username is not an email address.")
+    else:
+        print("ℹ️ Skipped Email: Priority is not High.")
 
     response = RedirectResponse(url="/", status_code=303)
     response.set_cookie(key="flash_msg", value="Task added successfully!", max_age=5)
