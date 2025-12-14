@@ -56,9 +56,13 @@ def send_email_sync(subject: str, email_to: str, body_data: dict):
         msg.attach(MIMEText(html_content, 'html'))
 
         # Use SMTP_SSL directly on Port 465 (Secure from the start)
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 587)
+        server.starttls()
+        print("SMTP Server is started")
         server.login(sender, password)
+        print('Logged in successfully')
         server.send_message(msg)
+        print('Message sent')
         server.quit()
         print(f"✅ Email sent successfully to {email_to}")
         
