@@ -51,4 +51,16 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Find the date input field
+        const dateInput = document.querySelector('input[name="deadline"]');
+        if(dateInput) {
+            // Set the minimum allowed date to Today
+            dateInput.min = new Date().toISOString().split("T")[0];
+        }
+    });
+</script>
+
 {% endblock %}
