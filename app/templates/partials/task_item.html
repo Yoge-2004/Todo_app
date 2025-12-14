@@ -1,0 +1,21 @@
+<div class="card mb-2 border-0 shadow-sm rounded-3 overflow-hidden">
+    <div class="card-body d-flex align-items-center justify-content-between py-3 
+        {% if task.priority.name == 'HIGH' %}border-start border-5 border-danger{% endif %}">
+        
+        <div class="d-flex align-items-center gap-3">
+            <a href="/complete/{{ task.id }}" class="text-decoration-none">
+                {% if task.status.name == 'COMPLETED' %}
+                    <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                {% else %}
+                    <i class="bi bi-circle text-secondary fs-4"></i>
+                {% endif %}
+            </a>
+            <div class="{% if task.status.name == 'COMPLETED' %}text-decoration-line-through text-muted{% endif %}">
+                <h6 class="mb-0 fw-bold">{{ task.title }}</h6>
+                <small class="text-muted"><i class="bi bi-calendar"></i> {{ task.deadline }}</small>
+            </div>
+        </div>
+        
+        <a href="/delete/{{ task.id }}" class="text-danger opacity-50 hover-opacity-100"><i class="bi bi-trash-fill"></i></a>
+    </div>
+</div>
