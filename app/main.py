@@ -69,17 +69,29 @@ async def add_task(
     user = get_current_user(request, session)
     if not user: return RedirectResponse(url="/login")
 
-    new_task = Task(title=title, deadline=date.fromisoformat(deadline), priority=priority, owner_id=user.id)
+    # --- NEW VALIDATION LOGIC ---
+    deadline_date = date.fromisoformat(deadline)
+    
+    if deadline_date < date.today():
+        # If date is in the past, stop and send error message
+        response = RedirectResponse(url="/", status_code=303)
+        response.set_cookie(key="flash_msg", value="Error: You cannot add a task for the past!", max_age=5)
+        return response
+    # -----------------------------
+
+    new_task = Task(title=title, deadline=deadline_date, priority=priority, owner_id=user.id)
     session.add(new_task)
     session.commit()
     
-    # Send Email if High Priority
     if priority == "High":
-        background_tasks.add_task(send_email_async, "High Priority Task", user.username, {"title": title, "deadline": deadline})
+        # Check if username looks like an email before sending
+        if "@" in user.username:
+            background_tasks.add_task(send_email_async, "High Priority Task", user.username, {"title": title, "deadline": deadline})
 
     response = RedirectResponse(url="/", status_code=303)
     response.set_cookie(key="flash_msg", value="Task added successfully!", max_age=5)
     return response
+
 
 @app.get("/complete/{task_id}")
 def complete_task(task_id: int, request: Request, session: Session = Depends(get_session)):
