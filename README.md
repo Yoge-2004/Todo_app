@@ -47,12 +47,12 @@ A simple, minimal todo application written in Python. This repository provides a
    
    `
    cd todo-python-app
-  `
+   `
 
 
 3. Create and activate a virtual environment:
    
-  `
+   `
    python -m venv .venv
    `
 
@@ -62,7 +62,7 @@ A simple, minimal todo application written in Python. This repository provides a
 
    `
    .venv\Scripts\activate      # Windows (PowerShell: .venv\Scripts\Activate.ps1)
-  `
+   `
 
 4. Install dependencies:
 
@@ -122,10 +122,11 @@ Refer to the actual CLI entrypoint or README in the repo for exact command names
 - Follow PEP8 style for Python code.
 - Use black/isort/flake8 (optional) to enforce formatting and linting:
 
-  `pip install black isort flake8`
+  `pip install black isort flake8
   black .
   isort .
   flake8
+  `
 
 - Add new features in feature branches and open PRs against main (or your default branch).
 
