@@ -184,6 +184,6 @@ Refer to the actual CLI entrypoint or README in the repo for exact command names
 ## Acknowledgements
 - Inspired by many minimal todo app tutorials and starter templates for Python web apps.
 
-Notes / Next steps
+## Notes / Next steps
 - Update the "Running the app", "API", and "CLI" sections with exact commands and entrypoints after confirming the repository's main module or framework (Flask, FastAPI, or pure-Python CLI).
 - If you want, I can open a PR that adds this README directly to the repository, or customize the README further to match the repo's actual structure (entrypoint filename, dependencies, tests) — tell me whether to proceed.
